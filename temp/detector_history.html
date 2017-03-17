@@ -1,0 +1,32 @@
+{% extends 'login/detectorHome.html' %}
+
+{% block content %}
+<div class="row">
+  <!--print the log here-->
+  <div class="col-md-10 text-center" style="height:250px;overflow:auto;">
+    <table class="table table-striped">
+      <!--generate the table dynamically based on query-->
+      <thead>
+        <tr>
+          <th>User name</th>
+          <th>Filename</th>
+          <th>Date of identification</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>a</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>b</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>     
+  </div>
+</div>
+
+{% endblock content %}
