@@ -1,7 +1,7 @@
 * {
    line-height: 3;
 }
-.container, .row{
+.row{
 	padding-top: 15px;
 	padding-bottom: 15px;
 
@@ -19,9 +19,12 @@ nav{
 	background-color: #3F729B;
 	color: #fafafa;
 }
-.bg-footer{
+.color1{
 	background-color: #1C2331;
 	color: white;
+}
+.color2{
+	color: #ffa500 ;
 }
 input, label{
 	font-size: 14px;
