@@ -1,0 +1,28 @@
+* {
+   line-height: 3;
+}
+.container, .row{
+	padding-top: 15px;
+	padding-bottom: 15px;
+
+}
+section{
+	min-height: 100%;
+}
+/*
+nav{
+	background-color: #1C2331;
+	color: white;
+}
+*/
+.colored{
+	background-color: #3F729B;
+	color: #fafafa;
+}
+.bg-footer{
+	background-color: #1C2331;
+	color: white;
+}
+input, label{
+	font-size: 14px;
+}
