@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from .forms import LoginDetailsForm
 from .models import LoginDetails
 from django.contrib.auth.decorators import login_required
@@ -19,7 +19,14 @@ def login_form(request):
 			try:
 				q = LoginDetails.objects.get(username=username)
 				if(q.password == password):
-					return HttpResponse("<h1> Access Granted </h1>")
+					request.session['username'] = username
+					request.session['access'] = q.designation
+					request.session['clientid'] = q.clientid
+					if q.designation != 5:
+						return HttpResponseRedirect("/user/userhome/")
+					else:
+						return HttpResponseRedirect("/user/detectorhome/")
+					#return HttpResponse("access granted")
 				else:
 					return HttpResponse("<h1> Access Denied </h1>")
 			except:
@@ -53,4 +60,9 @@ def login_assign(request):
 		pass
 	return HttpResponse("client id, ciphertext, and hash generated")
 
-
+def logout(request):
+	try:
+		del request.session['username']
+	except:
+		pass
+	return HttpResponseRedirect("/")
