@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect	
-from .forms import ChangepwdForm
+from .forms import ChangepwdForm, DocumentForm
 from login.models import LoginDetails
+from app1.models import Document
 from django.views.decorators.cache import cache_control
 # Create your views here.
 
@@ -79,3 +80,29 @@ def changepassword(request):
 		return render(request, 'app1/detector_changePassword.html', context)
 	else:
 		return render(request, 'app1/user_changePassword.html', context)
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def modelformupload(request):
+	try:
+		username = request.session['username']
+		designation = request.session['access']
+	except:
+		return HttpResponseRedirect('/')
+	if request.method == 'POST':
+		form = DocumentForm(request.POST, request.FILES)
+		if form.is_valid():
+			if request.POST['accesslevel'] > str(designation):
+				return HttpResponse("Access level not allowed")
+			else:
+				form.save()
+			return HttpResponseRedirect('/user/userhome')
+	else:
+		form = DocumentForm()
+	levels = ['public', 'private', 'confidential', 'topsecret']
+	context = {
+		'form' : form,
+		'designation': levels[designation%4 -1],
+		'nbar':'uploaddoc',
+		'username' : username,
+	}
+	return render(request, 'app1/user_uploadDocument.html', context)

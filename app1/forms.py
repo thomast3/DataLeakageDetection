@@ -1,4 +1,5 @@
 from django import forms
+from app1.models import Document
 
 class ChangepwdForm(forms.Form):
 	def __init__(self, *args, **kwargs):
@@ -19,3 +20,29 @@ class ChangepwdForm(forms.Form):
 	current = forms.CharField(max_length=50, widget=forms.PasswordInput)
 	new = forms.CharField(max_length=50, widget=forms.PasswordInput)	
 	reenter = forms.CharField(max_length=50, widget=forms.PasswordInput)
+
+class DocumentForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(DocumentForm, self).__init__(*args, **kwargs)
+        self.fields['title'].widget.attrs = {
+            'class': 'form-control',
+            'placeholder': 'title'
+        }
+        self.fields['description'].widget.attrs = {
+            'class': 'form-control',
+            'placeholder': 'description'
+        }
+        self.fields['accesslevel'].widget.attrs = {
+            'class': 'form-control',
+            'placeholder': 'accesslevel',
+        }
+
+
+    title = forms.CharField(max_length=50)
+    description = forms.CharField(max_length=500)
+    accesslevel = forms.CharField(max_length=50)
+    document = forms.FileField()
+
+    class Meta:
+        model = Document
+        fields = ('title','description', 'accesslevel', 'document')
