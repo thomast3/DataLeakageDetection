@@ -1,9 +1,10 @@
-{% extends 'login/userHome.html' %}
+{% extends 'app1/userHome.html' %}
 
-{% block content %}
+ {% block content %}
+     <!--
 <div class="row">
   <form class="form-horizontal" method="POST">
-    {% csrf_token %}  
+
     <div class="form-group">
       <div class="col-md-5 col-md-offset-3">
         <h4> SEARCH DOCUMENT </h4>
@@ -23,10 +24,10 @@
     </div>
   </form>
 </div> <!-- end of search form or row1-->
-<div class="row">
+<!--<div class="row">
   <div class="col-md-10" style="height:150px;overflow:auto;">
     <table class="table table-striped">
-      <!--generate the table dynamically based on query-->
+      <!--generate the table dynamically based on query
       <thead>
         <tr>
           <th>File id</th>
@@ -71,23 +72,19 @@
   </div>
 
 </div> <!-- end of row2-->
-
-<div class="row">
-  <form class="form-horizontal" method="POST">
-  {% crsf_token %}
-    <div class="form-group">
-      <div class="col-md-5 col-md-offset-3">
-        <input type="text" placeholder="File id" class="form-control"></input> 
-              
-      </div>
-      <div class="col-md-1">
-        <button type="submit">
-           <span class="glyphicon glyphicon-download" style="font-size:1.8em;"></span>
-        </button>         
-      </div>      
-    </div>
-  </form>
-</div><!--end of row3--> 
-  
-
-{% endblock content %}
+     <div class="row">
+         <div class="col-md-10" style="height:150px;overflow:auto;">
+             <table class="table table-striped">
+                 {% for file in data %}
+                     <form method="POST">
+                         {% csrf_token %}
+                         <tr><td>{{ file.title }}</td>
+                             <td>{{ file.description }}</td>
+                             <td><button type="submit" class="form-control btn btn-success" name="filename" value="{{ file.document }}"> Access </button></td>
+                         </tr>
+                     </form>
+                 {% endfor %}
+             </table>
+         </div>
+     </div>
+ {% endblock content %}
