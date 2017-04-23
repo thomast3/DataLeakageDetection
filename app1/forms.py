@@ -1,5 +1,5 @@
 from django import forms
-from app1.models import Document
+from app1.models import Document, DetectorUpload
 
 class ChangepwdForm(forms.Form):
 	def __init__(self, *args, **kwargs):
@@ -46,3 +46,9 @@ class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         fields = ('title','description', 'accesslevel', 'document')
+
+class DetectorUploadForm(forms.ModelForm):
+    document = forms.FileField()
+    class Meta:
+        model = DetectorUpload
+        fields = {'document'}

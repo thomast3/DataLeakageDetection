@@ -1,12 +1,15 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect	
-from .forms import ChangepwdForm, DocumentForm
+from .forms import ChangepwdForm, DocumentForm, DetectorUploadForm
 from login.models import LoginDetails
-from app1.models import Document as doc
+from app1.models import Document as doc, DetectorUpload
 from django.views.decorators.cache import cache_control
 import cv2
 from PyPDF2 import PdfFileReader,PdfFileWriter
 from reportlab.pdfgen import canvas
+import subprocess
+import codecs
+from Crypto.Cipher import AES
 # Create your views here.
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -121,7 +124,7 @@ def displayfiles(request):
 		designation = request.session['access']
 	except:
 		return HttpResponseRedirect('/')
-	q = doc.objects.filter(accesslevel=designation)
+	q = doc.objects.filter(accesslevel__lte=designation)
 	levels = ['public', 'private', 'confidential', 'topsecret']
 	context = {
 		'data': q,
@@ -144,48 +147,129 @@ def displayfiles(request):
 	return render(request, "app1/user_searchDocument.html", context)
 
 def modify_file(filename, clientid):
-	q = LoginDetails.objects.filter(clientid=clientid)[0]
-	cipher = q.cipher_text
-	hash1 = q.hash_text
+    q = LoginDetails.objects.filter(clientid=clientid)[0]
+    cipher = q.cipher_text
+    hash1 = q.hash_text
 
-	#cipher embedding
-	pixel_array = [ord(c) for c in cipher]
-	del pixel_array[-1]
-	img = cv2.imread('/home/t3/projtest/actual/new/mysite/media/documents/image_small.png')
-	for i in range(0, len(pixel_array), 1):
-		img.itemset((55, i + 10, 0), pixel_array[i])
+    #cipher embedding
+    pixel_array = [ord(c) for c in cipher]
+    del pixel_array[-1]
+    img = cv2.imread('/home/t3/projtest/actual/new/mysite/media/documents/image_small.png')
+    for i in range(0, len(pixel_array), 1):
+        img.itemset((55, i + 10, 0), pixel_array[i])
 
-	#hash embedding
-	pixel_array1 = [ord(c) for c in hash1]
-	x = 58
-	y = 10
-	for i in range(len(pixel_array1) - 1, -1, -1):
-		if (y >= img.shape[1]):
-			y = 0
-			x = x + 1
+    #hash embedding
+    pixel_array1 = [ord(c) for c in hash1]
+    x = 58
+    y = 10
+    for i in range(len(pixel_array1) - 1, -1, -1):
+        if (y >= img.shape[1]):
+            y = 0
+            x = x + 1
 
-		img.itemset((x, y, 0), pixel_array1[i])
-		y = y + 1
-	cv2.imwrite('/home/t3/projtest/actual/new/mysite/media/documents/image_small_hash.png', img)
+        img.itemset((x, y, 0), pixel_array1[i])
+        y = y + 1
+    cv2.imwrite('/home/t3/projtest/actual/new/mysite/media/documents/image_small_hash.png', img)
 
-	#embedding process
-	c = canvas.Canvas("/home/t3/projtest/actual/new/mysite/media/documents/watermark.pdf")
-	c.drawImage("/home/t3/projtest/actual/new/mysite/media/documents/image_small_hash.png", 0, 0, preserveAspectRatio=True)
-	c.save()
+    #embedding process
+    c = canvas.Canvas("/home/t3/projtest/actual/new/mysite/media/documents/watermark.pdf")
+    c.drawImage("/home/t3/projtest/actual/new/mysite/media/documents/image_small_hash.png", 0, 0, preserveAspectRatio=True)
+    c.save()
 
-	output = PdfFileWriter()
-	newurl = "/home/t3/projtest/actual/new/mysite/media/" + filename
-	input1 = PdfFileReader(open(newurl, "r+b"))
-	num_pages = input1.getNumPages()
-	watermark = PdfFileReader(open("/home/t3/projtest/actual/new/mysite/media/documents/watermark.pdf", "r+b"))
+    output = PdfFileWriter()
+    newurl = "/home/t3/projtest/actual/new/mysite/media/" + filename
+    input1 = PdfFileReader(open(newurl, "r+b"))
+    num_pages = input1.getNumPages()
+    watermark = PdfFileReader(open("/home/t3/projtest/actual/new/mysite/media/documents/watermark.pdf", "r+b"))
 
-	for pg in range(0, num_pages):
-		page = input1.getPage(pg)
-		page.mergePage(watermark.getPage(0))
-		output.addPage(page)
+    for pg in range(0, num_pages):
+        page = input1.getPage(pg)
+        page.mergePage(watermark.getPage(0))
+        output.addPage(page)
 
-	# finally, write "output" to document-output.pdf
-	outputStream = open("/home/t3/projtest/actual/new/mysite/media/documents/document-output.pdf", "w+b")
-	output.write(outputStream)
-	outputStream.close()
-	return ("success")
+    # finally, write "output" to document-output.pdf
+    outputStream = open("/home/t3/projtest/actual/new/mysite/media/documents/document-output.pdf", "w+b")
+    output.write(outputStream)
+    outputStream.close()
+    return ("success")
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def checkdocument(request):
+    try:
+        username = request.session['username']
+        designation = request.session['access']
+    except:
+        return HttpResponseRedirect('/')
+    if designation != 5:
+        del request.session['username']  # end the session
+        return HttpResponseRedirect('/')  # redirect to login page
+    if request.method=='POST':
+        form = DetectorUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            extraction()
+        return HttpResponseRedirect('/user/detectorhome')
+
+    else:
+        form = DetectorUploadForm()
+
+    context = {
+        'username': username,
+        'nbar': 'checkdoc',
+        'form': form,
+    }
+    return render(request, "app1/detector_checkDocument.html", context)
+
+def extraction():
+	q = DetectorUpload.objects.last()
+	name = str(q.document)
+	document_location = "/home/t3/projtest/actual/new/mysite/media/"
+	file_loc = document_location + name
+	logo_loc = document_location + "detector/./z"
+
+	#logo extraction from document
+	subprocess.call(["pdfimages", "-png", "-p", "-l", "1", file_loc, logo_loc])
+
+	#cipher extraction from logo
+	im = cv2.imread(document_location + 'detector/z-001-000.png')
+	cipher = []
+	for i in range(0,24,1):
+		cipher.append(im[55,i+10,0])
+	cipher = ''.join(chr(c) for c in cipher)
+	cipher=cipher + '\n'
+
+    #decryption of cipher
+	base64_data = cipher.encode('utf-8')
+	cipher_text = codecs.decode(base64_data, 'base64')
+	decryption_suite = AES.new('this is a key123', AES.MODE_CBC, 'This is an IV456')
+	plain = decryption_suite.decrypt(cipher_text)
+	plain = plain.decode('utf-8')
+    #extaction of hash from logo
+	x=58
+	y=10
+	reverse_hash=[]
+	for i in range(0,128,1):
+		if(y>=im.shape[1]):
+			y=0
+			x=x+1
+		reverse_hash.append(im[x,y,0])
+		y=y+1
+	hash=reverse_hash[::-1]
+	hash = ''.join(chr(c) for c in hash)  # join characters
+	try:
+		culprit = LoginDetails.objects.get(cipher_text=cipher)
+		print(culprit.clientid, culprit.username, culprit.hash_text)
+		if culprit.hash_text == hash:
+			print("Culprit's name is: {}".format(culprit.username))
+			q.username = culprit.username
+			q.designation = culprit.designation
+			q.m = hash
+			q.mdash = culprit.hash_text
+			q.clientid = culprit.clientid
+			q.status = 'Yes'
+			q.save()
+
+	except:
+		print("Not detected")
+		q.status = 'No'
+		q.save()
