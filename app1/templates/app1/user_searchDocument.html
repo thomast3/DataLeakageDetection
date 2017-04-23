@@ -1,80 +1,18 @@
 {% extends 'app1/userHome.html' %}
 
  {% block content %}
-     <!--
-<div class="row">
-  <form class="form-horizontal" method="POST">
-
-    <div class="form-group">
-      <div class="col-md-5 col-md-offset-3">
-        <h4> SEARCH DOCUMENT </h4>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <div class="col-md-5 col-md-offset-3">
-        <input type="text" placeholder="Type here" class="form-control"></input> 
-              
-      </div>
-      <div class="col-md-1">
-        <button type="submit">
-           <span class="glyphicon glyphicon-search" style="font-size:1.8em;"></span>
-        </button>         
-      </div> 
-    </div>
-  </form>
-</div> <!-- end of search form or row1-->
-<!--<div class="row">
-  <div class="col-md-10" style="height:150px;overflow:auto;">
-    <table class="table table-striped">
-      <!--generate the table dynamically based on query
-      <thead>
-        <tr>
-          <th>File id</th>
-          <th>Filename</th>
-          <th>Modified Date</th>
-          <th>Size</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>1</td>
-          <td>a</td>
-          <td></td>
-          <td>45kb</td>
-        </tr>
-        <tr>
-          <td>2</td>
-          <td>b</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td>3</td>
-          <td>c</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td>4</td>
-          <td>d</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td>5</td>
-          <td>e</td>
-          <td></td>
-          <td></td>
-        </tr> 
-      </tbody>
-    </table>     
-  </div>
-
-</div> <!-- end of row2-->
+     
      <div class="row">
-         <div class="col-md-10" style="height:150px;overflow:auto;">
+         <div class="col-md-10" style="height:200px;overflow:auto;">
              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th class="text-center">Title</th>
+                    <th class="text-center">Description</th>
+                    <th class="text-center"></th>
+                  </tr>
+                </thead>
+                <tbody>  
                  {% for file in data %}
                      <form method="POST">
                          {% csrf_token %}
@@ -84,6 +22,7 @@
                          </tr>
                      </form>
                  {% endfor %}
+                </tbody>
              </table>
          </div>
      </div>
