@@ -273,3 +273,21 @@ def extraction():
 		print("Not detected")
 		q.status = 'No'
 		q.save()
+
+def history(request):
+	try:
+		username = request.session['username']
+		designation = request.session['access']
+	except:
+		return HttpResponseRedirect('/')
+	if designation != 5:
+		del request.session['username']  # end the session
+		return HttpResponseRedirect('/')  # redirect to login page
+
+	q = DetectorUpload.objects.exclude(status='Not Viewed')
+	context = {
+		'nbar': 'history',
+		'data': q,
+	}
+
+	return render(request, 'app1/detector_history.html', context)

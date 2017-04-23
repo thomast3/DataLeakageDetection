@@ -7,4 +7,5 @@ urlpatterns = [
 	url(r'^upload', views.modelformupload),
     url(r'^displayfiles', views.displayfiles),
 	url(r'^checkdocument', views.checkdocument),
+	url(r'^history', views.history),
 ]
