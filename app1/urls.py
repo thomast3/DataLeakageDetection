@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'^displayfiles', views.displayfiles),
 	url(r'^checkdocument', views.checkdocument),
 	url(r'^history', views.history),
+	url(r'^deletefile', views.deletefile),
 ]

@@ -3,6 +3,7 @@ from django.db import models
 # Create your models here.
 class Document(models.Model):
 	title = models.CharField(max_length=50,default='null')
+	author = models.CharField(max_length=50, default='null') #clientid of the person who uploaded the file
 	description = models.CharField(max_length=500, blank=True)
 	accesslevel = models.CharField(max_length=50, default=4)
 	document = models.FileField(upload_to='documents/')

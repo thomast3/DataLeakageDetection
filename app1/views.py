@@ -92,6 +92,7 @@ def modelformupload(request):
 	try:
 		username = request.session['username']
 		designation = request.session['access']
+		clientid = request.session['clientid']
 	except:
 		return HttpResponseRedirect('/')
 	if request.method == 'POST':
@@ -101,6 +102,10 @@ def modelformupload(request):
 				return HttpResponse("Access level not allowed")
 			else:
 				form.save()
+				q = doc.objects.last()
+				q.author = clientid
+				q.save()
+
 			return HttpResponseRedirect('/user/userhome')
 	else:
 		form = DocumentForm()
@@ -274,6 +279,7 @@ def extraction():
 		q.status = 'No'
 		q.save()
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def history(request):
 	try:
 		username = request.session['username']
@@ -288,6 +294,34 @@ def history(request):
 	context = {
 		'nbar': 'history',
 		'data': q,
+		'designation': designation,
+		'username': username,
 	}
 
 	return render(request, 'app1/detector_history.html', context)
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def deletefile(request):
+	try:
+		username = request.session['username']
+		clientid = request.session['clientid']
+		designation = request.session['access']
+	except:
+		return HttpResponseRedirect('/')
+	q = doc.objects.filter(author=clientid) #make it author
+	levels = ['public', 'private', 'confidential', 'topsecret']
+	context = {
+		'data': q,
+		'nbar': 'displaydoc',
+		'designation': levels[designation%4 -1],
+		'username': username,
+	}
+	if request.method == 'POST':
+		if request.POST.get('filename'): #filename is name attribute of the button clicked in template
+			name = request.POST.get('filename')
+			doc.objects.get(document=name).delete()
+
+	if designation == 5:
+		del request.session['username']
+		return HttpResponseRedirect('/')
+	return render(request, 'app1/user_deleteDocument.html',context)
