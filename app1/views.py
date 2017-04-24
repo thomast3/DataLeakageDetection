@@ -10,6 +10,7 @@ from reportlab.pdfgen import canvas
 import subprocess
 import codecs
 from Crypto.Cipher import AES
+from django.db.models import Q
 # Create your views here.
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -213,7 +214,7 @@ def checkdocument(request):
         if form.is_valid():
             form.save()
             extraction()
-        return HttpResponseRedirect('/user/detectorhome')
+        return HttpResponseRedirect('/user/history')
 
     else:
         form = DetectorUploadForm()
@@ -262,7 +263,7 @@ def extraction():
 	hash=reverse_hash[::-1]
 	hash = ''.join(chr(c) for c in hash)  # join characters
 	try:
-		culprit = LoginDetails.objects.get(cipher_text=cipher)
+		culprit = LoginDetails.objects.filter(Q(cipher_text=cipher) | Q(hash_text=hash))[0]
 		print(culprit.clientid, culprit.username, culprit.hash_text)
 		if culprit.hash_text == hash:
 			print("Culprit's name is: {}".format(culprit.username))
@@ -278,6 +279,7 @@ def extraction():
 		print("Not detected")
 		q.status = 'No'
 		q.save()
+
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def history(request):
