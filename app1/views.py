@@ -290,7 +290,7 @@ def history(request):
 		del request.session['username']  # end the session
 		return HttpResponseRedirect('/')  # redirect to login page
 
-	q = DetectorUpload.objects.exclude(status='Not Viewed')
+	q = DetectorUpload.objects.exclude(status='Not Viewed').order_by("-uploaded_at")
 	context = {
 		'nbar': 'history',
 		'data': q,
@@ -312,14 +312,18 @@ def deletefile(request):
 	levels = ['public', 'private', 'confidential', 'topsecret']
 	context = {
 		'data': q,
-		'nbar': 'displaydoc',
+		'nbar': 'deletedoc',
 		'designation': levels[designation%4 -1],
 		'username': username,
 	}
+	document_location = "/home/t3/projtest/actual/new/mysite/media/"
 	if request.method == 'POST':
 		if request.POST.get('filename'): #filename is name attribute of the button clicked in template
 			name = request.POST.get('filename')
+			del_location = document_location + name
+			print(del_location)
 			doc.objects.get(document=name).delete()
+			subprocess.call(["rm", del_location])
 
 	if designation == 5:
 		del request.session['username']
